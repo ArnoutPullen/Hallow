@@ -5,13 +5,13 @@ pygame.init()
 # Set game window.
 size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption('Hello World!')
+pygame.display.set_caption('Witchflight')
 
 # Set variables.
-speed = [1, 1]
+speed = [10, 10]
 background = 25, 25, 40
-up = [0, -1]
-down = [0, 1]
+up = [0, -10]
+down = [0, 10]
 
 # Load image into a variable.
 moon = pygame.image.load('images/moon.png')
@@ -26,15 +26,18 @@ lethalDamageSound = pygame.mixer.Sound('audio/lethal_damage.wav')
 gameoverSound = pygame.mixer.Sound('audio/gameover.wav')
 
 # Set a rectangle version of the image variable.
-moonRect = pumpkin.get_rect()
+moonRect = moon.get_rect()
 pumpkinRect = pumpkin.get_rect()
 witchRect = witch.get_rect()
 
 # Set up image original position.
 witchRect = witchRect.move(15, 20)
 moonRect = moonRect.move(540, 70)
+pumpkinRect = pumpkinRect.move(70, 340)
 
 while True: # Main game loop.
+
+    pygame.time.Clock().tick(60)
 
     # Event catcher. If statements allow us to decide what happens per event within this for loop.
     # ( Events such as quitting the game, pressing a key, moving the mouse, etc. )
@@ -48,6 +51,8 @@ while True: # Main game loop.
         speed[0] = -speed[0]
     if pumpkinRect.top < 0 or pumpkinRect.bottom > height:
         speed[1] = -speed[1]
+    if pumpkinRect.colliderect(witchRect):
+        lethalDamageSound.play()
 
     # Play SFX.
     if pumpkinRect.left < 2 or pumpkinRect.right > (width - 2):
