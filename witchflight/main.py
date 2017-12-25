@@ -1,3 +1,4 @@
+# Standard initialisation stuff.
 import sys, pygame
 from pygame.locals import *
 pygame.init()
@@ -12,15 +13,23 @@ speed = [10, 10]            # Pumpkin movement speed.
 background = 25, 25, 40     # Background RGB color.
 up = [0, -10]               # Move witch up.
 down = [0, 10]              # Move witch down.
+frameCounter = 0            # Witch frame counter.
 
+# This variable represents the player's lives.
 global hitpoints            # Declare global int: hitpoints.
-hitpoints = 3               # Set hitpoint amount.
+hitpoints = 4               # Set hitpoint amount.
 
-global damageTaken          # Declare global bool: damageTaken.
-damageTaken = False         # Set damageTaken state.
+# This variable is used to check whether the player has recently taken damage.
+global damageAnimation      # Declare global bool: damageAnimation.
+damageAnimation = False     # Set damageAnimation state.
 
+# This variable is used to execute spacebar-activated code only once per press.
 global spacebarPressed      # Declare global bool: damageTaken.
 spacebarPressed = False     # Set spacebarPressed state.
+
+# This variable is used to loop the 'Taking damage' animation.
+global looped               # Declare global int: looped.
+looped = 0                  # Set looped value.
 
 # Load image into a variable.
 moon = pygame.image.load('images/moon.png')
@@ -43,18 +52,24 @@ witchRect = witch.get_rect()
 retrybuttonRect = retrybutton.get_rect()
 gameoverRect = gameover.get_rect()
 
+# Make the player hitbox more forgiving.
+witchRect.width -= 15
+witchRect.height -= 15
+
 # Set up image original position.
-witchRect = witchRect.move(15, 20)
+witchRect = witchRect.move(15, 240)
 moonRect = moonRect.move(540, 70)
-pumpkinRect = pumpkinRect.move(70, 340)
+pumpkinRect = pumpkinRect.move(140, 140)
 retrybuttonRect = retrybuttonRect.move(345, 380)
 gameoverRect = gameoverRect.move(162, 60)
 
 # Defining a fireball.
 class fireball:
     def __init__(self):
-        self.image = pygame.image.load('images/fireball1.png')
-        self.rect = self.image.get_rect()
+        self.image1 = pygame.image.load('images/fireball1.png')
+        self.image2 = pygame.image.load('images/fireball2.png')
+        self.rect = self.image1.get_rect()
+        self.flippedImage = False
 
 # Set up a list that will be filled with all fireball objects.
 fireballList = list()
@@ -78,6 +93,7 @@ while True: # Main game loop.
         if pygame.mouse.get_pressed()[0] == True and retrybuttonRect.collidepoint(mousePos)\
         or event.type == KEYDOWN and event.key == K_SPACE:
 
+            # Empty our list of fireballs.
             fireballList = list()
 
             # Reset rectangles.
@@ -88,9 +104,9 @@ while True: # Main game loop.
             gameoverRect = gameover.get_rect()
 
             # Reset rectangle positions.
-            witchRect = witchRect.move(15, 20)
+            witchRect = witchRect.move(15, 240)
             moonRect = moonRect.move(540, 70)
-            pumpkinRect = pumpkinRect.move(70, 340)
+            pumpkinRect = pumpkinRect.move(140, 140)
             retrybuttonRect = retrybuttonRect.move(345, 380)
             gameoverRect = gameoverRect.move(162, 60)
 
@@ -98,6 +114,8 @@ while True: # Main game loop.
             speed = [10, 10]
 
             hitpoints = 3
+
+            damageAnimation = False
 
     else:
 
@@ -127,12 +145,10 @@ while True: # Main game loop.
             speed[1] = -speed[1]
 
         # Taking damage logic.
-        if pumpkinRect.colliderect(witchRect) and damageTaken == False:
+        if pumpkinRect.colliderect(witchRect) and damageAnimation == False:
             lethalDamageSound.play()
             hitpoints -= 1
-            damageTaken = True
-        if (pumpkinRect.colliderect(witchRect) == False and damageTaken == True):
-            damageTaken = False
+            damageAnimation = True
 
         # Play SFX.
         if pumpkinRect.left < 2 or pumpkinRect.right > (width - 2):
@@ -150,22 +166,53 @@ while True: # Main game loop.
         # Erase last frame.
         screen.fill(background)
 
-        # If the player has 0 hitpoints in this iteration, show the game over screen, otherwise load the next frame.
+        # If the player has 0 hitpoints in this iteration, show the game over screen. otherwise load the next frame.
         if hitpoints == 0:
             screen.blit(gameover, gameoverRect)
             screen.blit(retrybutton, retrybuttonRect)
             gameoverSound.play()
         else:
 
-            # Draw image on the screen.
+            # Draw images on the screen.
             screen.blit(moon, moonRect)
             screen.blit(pumpkin, pumpkinRect)
-            screen.blit(witch, witchRect)
+
+            # If a damage animation is queued, execute it.
+            if damageAnimation == True:
+
+                # The first 5 frames after damage, do not show the witch.
+                if (frameCounter <= 5):
+
+                    frameCounter += 1
+
+                # The next 5 frames, show the witch.
+                elif (frameCounter <= 10):
+                    screen.blit(witch, witchRect)
+                    frameCounter += 1
+
+                # After those frame sets, update variables.
+                elif (frameCounter > 10):
+                    frameCounter = 0
+                    looped += 1
+
+                # If the damage animation has looped enough times, stop the animation.
+                if (looped == 5):
+                    damageAnimation = False
+                    looped = 0
+            else:
+                screen.blit(witch, witchRect)
 
             # Each fireball moves to the right.
             for fireballObject in fireballList:
                 fireballObject.rect = fireballObject.rect.move(14, 0)
-                screen.blit(fireballObject.image, fireballObject.rect)
+
+                # Constantly switch between image1 and image2.
+                if (fireballObject.flippedImage == True):
+                    screen.blit(fireballObject.image1, fireballObject.rect)
+                    fireballObject.flippedImage = False
+                else:
+                    screen.blit(fireballObject.image2, fireballObject.rect)
+                    fireballObject.flippedImage = True
 
         # Make everything drawn to the screen visible.
         pygame.display.flip()
