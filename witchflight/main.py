@@ -10,26 +10,14 @@ pygame.display.set_caption('Witchflight')
 
 # Set variables.
 speed = [10, 10]            # Pumpkin movement speed.
-background = 25, 25, 40     # Background RGB color.
+background = 35, 35, 80     # Background RGB color.
 up = [0, -10]               # Move witch up.
 down = [0, 10]              # Move witch down.
 frameCounter = 0            # Witch frame counter.
-
-# This variable represents the player's lives.
-global hitpoints            # Declare global int: hitpoints.
-hitpoints = 4               # Set hitpoint amount.
-
-# This variable is used to check whether the player has recently taken damage.
-global damageAnimation      # Declare global bool: damageAnimation.
-damageAnimation = False     # Set damageAnimation state.
-
-# This variable is used to execute spacebar-activated code only once per press.
-global spacebarPressed      # Declare global bool: damageTaken.
-spacebarPressed = False     # Set spacebarPressed state.
-
-# This variable is used to loop the 'Taking damage' animation.
-global looped               # Declare global int: looped.
-looped = 0                  # Set looped value.
+hitpoints = 4               # The player's lives.
+damageAnimation = False     # True while the player is taking damage.
+spacebarPressed = False     # Bool used to control spacebar-activated code.
+looped = 0                  # Int used to control 'taking damage' looping.
 
 # Load image into a variable.
 moon = pygame.image.load('images/moon.png')
@@ -146,8 +134,12 @@ while True: # Main game loop.
 
         # Taking damage logic.
         if pumpkinRect.colliderect(witchRect) and damageAnimation == False:
-            lethalDamageSound.play()
             hitpoints -= 1
+
+            # If the player's hitpoints are 0, we will play a Game Over sound effect later in the code.
+            if hitpoints != 0:
+                lethalDamageSound.play()
+
             damageAnimation = True
 
         # Play SFX.
