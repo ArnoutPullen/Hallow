@@ -28,10 +28,19 @@ gameover = pygame.image.load('images/gameover.png')
 
 # Load SFX.
 appleCollectSound = pygame.mixer.Sound('audio/apple_collect.wav')
+appleCollectSound.set_volume(0.2)
 potionCollectSound = pygame.mixer.Sound('audio/potion_collect.wav')
+potionCollectSound.set_volume(0.1)
 takeDamageSound = pygame.mixer.Sound('audio/take_damage.wav')
-lethalDamageSound = pygame.mixer.Sound('audio/lethal_damage.wav')
+takeDamageSound.set_volume(0.2)
+bumpSound = pygame.mixer.Sound('audio/bump.wav')
+bumpSound.set_volume(0.1)
+shootFireballSound = pygame.mixer.Sound('audio/shoot_fireball.wav')
+shootFireballSound.set_volume(0.1)
 gameoverSound = pygame.mixer.Sound('audio/gameover.wav')
+
+bgm = pygame.mixer.Sound('audio/bgm.wav')
+bgm.play()
 
 # Set a rectangle version of the image variable.
 moonRect = moon.get_rect()
@@ -79,7 +88,7 @@ while True: # Main game loop.
 
         # If the player clicks the retry button or presses spacebar, we reset the image positions and hitpoints.
         if pygame.mouse.get_pressed()[0] == True and retrybuttonRect.collidepoint(mousePos)\
-        or event.type == KEYDOWN and event.key == K_SPACE:
+        or event.type == KEYDOWN and event.key == K_r:
 
             # Empty our list of fireballs.
             fireballList = list()
@@ -105,6 +114,8 @@ while True: # Main game loop.
 
             damageAnimation = False
 
+            bgm.play()
+
     else:
 
         # Instantiate a fireball and add it to the list of fireballs.
@@ -112,7 +123,7 @@ while True: # Main game loop.
         if event.type == KEYDOWN:
             if event.key == K_SPACE and spacebarPressed == False:
 
-                potionCollectSound.play()
+                shootFireballSound.play()
                 fireballObject = fireball()
                 fireballObject.rect.x = witchRect.x + 65
                 fireballObject.rect.y = witchRect.y + 15
@@ -138,15 +149,15 @@ while True: # Main game loop.
 
             # If the player's hitpoints are 0, we will play a Game Over sound effect later in the code.
             if hitpoints != 0:
-                lethalDamageSound.play()
+                takeDamageSound.play()
 
             damageAnimation = True
 
         # Play SFX.
         if pumpkinRect.left < 2 or pumpkinRect.right > (width - 2):
-            takeDamageSound.play()
+            bumpSound.play()
         if pumpkinRect.top < 2 or pumpkinRect.bottom > (height - 2):
-            takeDamageSound.play()
+            bumpSound.play()
 
         # Move witch.
         if event.type == KEYDOWN:
@@ -162,6 +173,7 @@ while True: # Main game loop.
         if hitpoints == 0:
             screen.blit(gameover, gameoverRect)
             screen.blit(retrybutton, retrybuttonRect)
+            bgm.stop()
             gameoverSound.play()
         else:
 

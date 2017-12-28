@@ -10,7 +10,7 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Witchflight')
 background = 35, 35, 80     # Background RGB color.
 
-# Variables
+# Score Variables.
 global obstaclesDestroyed
 obstaclesDestroyed = 0
 
@@ -20,12 +20,25 @@ applesCollected = 0
 global potionsCollected
 potionsCollected = 0
 
+# Spawn control variables.
+global appleSpawned
+appleSpawned = False
+
+global pumpkinSpawned
+pumpkinSpawned = False
+
+global potionSpawned
+potionSpawned = False
+
+global cloudSpawned
+cloudSpawned = False
+
 class fireball:
     def __init__(self):
         self.image1 = pygame.image.load('images/fireball1.png')
         self.image2 = pygame.image.load('images/fireball2.png')
         self.rect = self.image1.get_rect()
-        self.speed = [14, 0]
+        self.speed = [28, 0]
         self.flippedImage = False
 
     def update(self):
@@ -54,8 +67,8 @@ class witch:
         self.rect = self.image.get_rect()
 
         # Control variables.
-        self.upSpeed = [0, -10]
-        self.downSpeed = [0, 10]
+        self.upSpeed = [0, -20]
+        self.downSpeed = [0, 20]
         self.spacebarPressed = False
 
         # Damage handling variables.
@@ -120,7 +133,7 @@ class apple:
     def __init__(self):
         self.image = pygame.image.load('images/apple.png')
         self.rect = self.image.get_rect()
-        self.speed = [-5, 0]
+        self.speed = [-10, 0]
 
     def update(self):
 
@@ -137,7 +150,7 @@ class potion:
     def __init__(self):
         self.image = pygame.image.load('images/potion.png')
         self.rect = self.image.get_rect()
-        self.speed = [-5, 0]
+        self.speed = [-10, 0]
 
     def update(self):
 
@@ -154,7 +167,7 @@ class cloud:
     def __init__(self):
         self.image = pygame.image.load('images/cloud.png')
         self.rect = self.image.get_rect()
-        self.speed = [-5, 0]
+        self.speed = [-10, 0]
 
     def update(self):
 
@@ -171,7 +184,7 @@ class pumpkin:
     def __init__(self):
         self.image = pygame.image.load('images/pumpkin.png')
         self.rect = self.image.get_rect()
-        self.speed = [-10, 0]
+        self.speed = [-20, 0]
 
     def update(self):
 
@@ -196,6 +209,12 @@ appleList = list()
 
 objectList.insert(True, player)
 
+# Set custom events.
+SPAWNAPPLE = USEREVENT + 1
+SPAWNPUMPKIN = USEREVENT + 2
+pygame.time.set_timer(SPAWNAPPLE, 2500)
+pygame.time.set_timer(SPAWNPUMPKIN, 1500)
+
 while True: # Main game loop.
 
     # Run the game at 60 frames per second.
@@ -205,6 +224,38 @@ while True: # Main game loop.
     # ( Events such as quitting the game, pressing a key, moving the mouse, etc. )
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
+
+    # Periodically spawn an apple.
+    if event.type == SPAWNAPPLE and appleSpawned == False:
+
+        appleCollectable = apple()
+        randomInt = random.randint(25, 495)
+        appleCollectable.rect.x += 800
+        appleCollectable.rect.y += randomInt
+
+        appleList.insert(True, appleCollectable)
+        objectList.insert(True, appleCollectable)
+
+        appleSpawned = True
+
+    elif event.type != SPAWNAPPLE and appleSpawned == True:
+        appleSpawned = False
+
+    # Periodically spawn a pumpkin.
+    if event.type == SPAWNPUMPKIN and pumpkinSpawned == False:
+
+        pumpkinObstacle = pumpkin()
+        randomInt = random.randint(25, 495)
+        pumpkinObstacle.rect.x += 800
+        pumpkinObstacle.rect.y += randomInt
+
+        obstacleList.insert(True, pumpkinObstacle)
+        objectList.insert(True, pumpkinObstacle)
+
+        pumpkinSpawned = True
+
+    elif event.type != SPAWNPUMPKIN and pumpkinSpawned == True:
+        pumpkinSpawned = False
 
     # (TEMP) Spawn pumpkins from the right side of the map by pressing Q.
     if event.type == KEYDOWN:
@@ -241,7 +292,7 @@ while True: # Main game loop.
                 objectList.remove(appleToCollect)
 
                 applesCollected += 1
-                print (applesCollected)
+                print ("Apples collected: " + str(applesCollected))
 
         for obstacle in obstacleList:
 
@@ -262,7 +313,7 @@ while True: # Main game loop.
                     objectList.remove(obstacle)
 
                     obstaclesDestroyed += 1
-                    print(obstaclesDestroyed)
+                    print("Obstacles destroyed: " + str(obstaclesDestroyed))
 
     # Erase last frame.
     screen.fill(background)
