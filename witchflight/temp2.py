@@ -70,10 +70,6 @@ class witch:
         self.loopedAnimation = 0
         self.frameCounter = 0
 
-        # TEMP
-        self.flyingUp = False
-        self.flyingDown = False
-
     def shootFireball(self, source):
 
         # Create a fireball.
@@ -87,23 +83,12 @@ class witch:
 
     def update(self):
 
-        if self.rect.top > 36 and self.flyingUp == True:
-            self.rect = self.rect.move(self.upSpeed)
-
-        if self.rect.bottom < (height - 36) and self.flyingDown == True:
-            self.rect = self.rect.move(self.downSpeed)
-
-        if event.type == KEYUP:
-            if event.key == K_UP:
-                self.flyingUp = False
-            if event.key == K_DOWN:
-                self.flyingDown = False
-
         if event.type == KEYDOWN:
-            if event.key == K_UP:
-                self.flyingUp = True
-            if event.key == K_DOWN:
-                self.flyingDown = True
+
+            if event.key == K_UP and self.rect.top > 36:
+                self.rect = self.rect.move(self.upSpeed)
+            elif event.key == K_DOWN and self.rect.bottom < (height - 36):
+                self.rect = self.rect.move(self.downSpeed)
 
         if event.type == KEYDOWN:
 
@@ -221,10 +206,10 @@ appleList = list()
 objectList.insert(True, player)
 
 # Set custom events.
-SPAWNAPPLE = USEREVENT + 1
-SPAWNPUMPKIN = USEREVENT + 2
-SPAWNPOTION = USEREVENT + 3
-SPAWNCLOUD = USEREVENT + 4
+SPAWNAPPLE = USEREVENT + 3
+SPAWNPUMPKIN = USEREVENT + 4
+SPAWNPOTION = USEREVENT + 5
+SPAWNCLOUD = USEREVENT + 6
 pygame.time.set_timer(SPAWNAPPLE, 2500)
 pygame.time.set_timer(SPAWNPUMPKIN, 2000)
 pygame.time.set_timer(SPAWNPOTION, 3500)
@@ -240,26 +225,73 @@ while True: # Main game loop.
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
 
-        # Always make sure the player stops flying when they want to.
-        if event.type == KEYUP:
-            if event.key == K_UP:
-                player.flyingUp = False
-            if event.key == K_DOWN:
-                player.flyingDown = False
+    # Periodically spawn an apple.
+    if event.type == SPAWNAPPLE and appleSpawned == False:
 
-        # Periodically spawn an apple.
-        if event.type == SPAWNAPPLE:
+        appleCollectable = apple()
+        randomInt = random.randint(25, 495)
+        appleCollectable.rect.x += 800
+        appleCollectable.rect.y += randomInt
 
-            appleCollectable = apple()
-            randomInt = random.randint(25, 495)
-            appleCollectable.rect.x += 800
-            appleCollectable.rect.y += randomInt
+        appleList.insert(True, appleCollectable)
+        objectList.insert(True, appleCollectable)
 
-            appleList.insert(True, appleCollectable)
-            objectList.insert(True, appleCollectable)
+        appleSpawned = True
 
-        # Periodically spawn a pumpkin.
-        if event.type == SPAWNPUMPKIN:
+    elif event.type != SPAWNAPPLE and appleSpawned == True:
+        appleSpawned = False
+
+    # Periodically spawn a pumpkin.
+    if event.type == SPAWNPUMPKIN and pumpkinSpawned == False:
+
+        pumpkinObstacle = pumpkin()
+        randomInt = random.randint(25, 495)
+        pumpkinObstacle.rect.x += 800
+        pumpkinObstacle.rect.y += randomInt
+
+        pumpkinList.insert(True, pumpkinObstacle)
+        objectList.insert(True, pumpkinObstacle)
+
+        pumpkinSpawned = True
+
+    elif event.type != SPAWNPUMPKIN and pumpkinSpawned == True:
+        pumpkinSpawned = False
+
+    # Periodically spawn a potion.
+    if event.type == SPAWNPOTION and potionSpawned == False:
+
+        potionCollectible = potion()
+        randomInt = random.randint(25, 495)
+        potionCollectible.rect.x += 800
+        potionCollectible.rect.y += randomInt
+
+        potionList.insert(True, potionCollectible)
+        objectList.insert(True, potionCollectible)
+
+        potionSpawned = True
+
+    elif event.type != SPAWNPOTION and potionSpawned == True:
+        potionSpawned = False
+
+    # Periodically spawn a cloud.
+    if event.type == SPAWNCLOUD and cloudSpawned == False:
+
+        cloudObstacle = cloud()
+        randomInt = random.randint(25,495)
+        cloudObstacle.rect.x += 800
+        cloudObstacle.rect.y += randomInt
+
+        cloudList.insert(True, cloudObstacle)
+        objectList.insert(True, cloudObstacle)
+
+        cloudSpawned = True
+
+    elif event.type != SPAWNCLOUD and cloudSpawned == True:
+        cloudSpawned = False
+
+    # (TEMP) Spawn pumpkins from the right side of the map by pressing Q.
+    if event.type == KEYDOWN:
+        if event.key == K_q:
 
             pumpkinObstacle = pumpkin()
             randomInt = random.randint(25, 495)
@@ -269,86 +301,76 @@ while True: # Main game loop.
             pumpkinList.insert(True, pumpkinObstacle)
             objectList.insert(True, pumpkinObstacle)
 
-        # Periodically spawn a potion.
-        if event.type == SPAWNPOTION:
+    # (TEMP) spawn apples from the right side of the map by pressing W.
+    if event.type == KEYDOWN:
+        if event.key == K_w:
 
-            potionCollectible = potion()
+            appleCollectable = apple()
             randomInt = random.randint(25, 495)
-            potionCollectible.rect.x += 800
-            potionCollectible.rect.y += randomInt
+            appleCollectable.rect.x += 800
+            appleCollectable.rect.y += randomInt
 
-            potionList.insert(True, potionCollectible)
-            objectList.insert(True, potionCollectible)
+            appleList.insert(True, appleCollectable)
+            objectList.insert(True, appleCollectable)
 
-        # Periodically spawn a cloud.
-        if event.type == SPAWNCLOUD:
+    # Collecting an apple.
+    for appleToCollect in appleList:
+        if appleToCollect.rect.colliderect(player):
 
-            cloudObstacle = cloud()
-            randomInt = random.randint(25,495)
-            cloudObstacle.rect.x += 800
-            cloudObstacle.rect.y += randomInt
+            appleList.remove(appleToCollect)
+            objectList.remove(appleToCollect)
 
-            cloudList.insert(True, cloudObstacle)
-            objectList.insert(True, cloudObstacle)
+            applesCollected += 1
+            print ("Apples collected: " + str(applesCollected))
 
-        # Collecting an apple.
-        for appleToCollect in appleList:
-            if appleToCollect.rect.colliderect(player):
+    # Collecting a potion.
+    for potionToCollect in potionList:
+        if potionToCollect.rect.colliderect(player):
 
-                appleList.remove(appleToCollect)
-                objectList.remove(appleToCollect)
+            potionList.remove(potionToCollect)
+            objectList.remove(potionToCollect)
 
-                applesCollected += 1
-                print ("Apples collected: " + str(applesCollected))
+            potionsCollected += 1
+            print ("Potions collected: " + str(potionsCollected))
 
-        # Collecting a potion.
-        for potionToCollect in potionList:
-            if potionToCollect.rect.colliderect(player):
+    # Pumpkin collision.
+    for pumpkinObstacle in pumpkinList:
+        if pumpkinObstacle.rect.colliderect(player) and player.damageAnimation == False:
+            player.hitpoints -= 1
+            player.damageAnimation = True
+        if player.hitpoints == 0:
+            sys.exit()
 
-                potionList.remove(potionToCollect)
-                objectList.remove(potionToCollect)
+        # Shooting down a pumpkin.
+        for shotFireball in fireballList:
+            if shotFireball.rect.colliderect(pumpkinObstacle):
 
-                potionsCollected += 1
-                print ("Potions collected: " + str(potionsCollected))
+                fireballList.remove(shotFireball)
+                objectList.remove(shotFireball)
+                pumpkinList.remove(pumpkinObstacle)
+                objectList.remove(pumpkinObstacle)
 
-        # Pumpkin collision.
-        for pumpkinObstacle in pumpkinList:
-            if pumpkinObstacle.rect.colliderect(player) and player.damageAnimation == False:
-                player.hitpoints -= 1
-                player.damageAnimation = True
-            if player.hitpoints == 0:
-                sys.exit()
+                obstaclesDestroyed += 1
+                print("Obstacles destroyed: " + str(obstaclesDestroyed))
 
-            # Shooting down a pumpkin.
-            for shotFireball in fireballList:
-                if shotFireball.rect.colliderect(pumpkinObstacle):
+    # Cloud collision.
+    for cloudObstacle in cloudList:
+        if cloudObstacle.rect.colliderect(player) and player.damageAnimation == False:
+            player.hitpoints -= 1
+            player.damageAnimation = True
+        if player.hitpoints == 0:
+            sys.exit()
 
-                    fireballList.remove(shotFireball)
-                    objectList.remove(shotFireball)
-                    pumpkinList.remove(pumpkinObstacle)
-                    objectList.remove(pumpkinObstacle)
+        for shotFireball in fireballList:
+            if shotFireball.rect.colliderect(cloudObstacle):
 
-                    obstaclesDestroyed += 1
-                    print("Obstacles destroyed: " + str(obstaclesDestroyed))
+                fireballList.remove(shotFireball)
+                objectList.remove(shotFireball)
+                cloudList.remove(cloudObstacle)
+                objectList.remove(cloudObstacle)
 
-        # Cloud collision.
-        for cloudObstacle in cloudList:
-            if cloudObstacle.rect.colliderect(player) and player.damageAnimation == False:
-                player.hitpoints -= 1
-                player.damageAnimation = True
-            if player.hitpoints == 0:
-                sys.exit()
-
-            for shotFireball in fireballList:
-                if shotFireball.rect.colliderect(cloudObstacle):
-
-                    fireballList.remove(shotFireball)
-                    objectList.remove(shotFireball)
-                    cloudList.remove(cloudObstacle)
-                    objectList.remove(cloudObstacle)
-
-                    obstaclesDestroyed += 1
-                    print("Obstacles destroyed: " + str(obstaclesDestroyed))
+                obstaclesDestroyed += 1
+                print("Obstacles destroyed: " + str(obstaclesDestroyed))
 
     # Erase last frame.
     screen.fill(background)
