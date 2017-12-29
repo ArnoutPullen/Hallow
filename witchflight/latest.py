@@ -227,6 +227,10 @@ witch = Witch()
 witch.rect = witch.rect.move(15, 240)
 objectList.insert(True, witch)
 
+# Make the player hitbox more forgiving.
+witch.rect.width -= 15
+witch.rect.height -= 15
+
 # ------------------------------------------------------------------------------------------------
 
 while True: # Main game loop.
