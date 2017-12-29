@@ -9,6 +9,7 @@ size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Witchflight')
 background = 35, 35, 70     # Background RGB color.
+isGameOver = False
 
 # Initialise static images.
 moon            = pygame.image.load('images/moon.png')
@@ -37,6 +38,7 @@ sBgm            .set_volume(1.0)
 
 sBgm.play() # Start the background music.
 
+
 '''
 Classes.
 Game objects created from these classes will be added to their respective list.
@@ -52,20 +54,25 @@ class Fireball():
         self.image2 = pygame.image.load('images/fireball2.png')
         self.rect = self.image1.get_rect()
         self.speed = [10, 0]
-        self.flippedImage = False
+        self.frameCounter = 0
 
     def Update(self):
 
         # Move the object.
         self.rect = self.rect.move(self.speed)
 
-        # Constantly switch between showing image 1 and 2.
-        if (self.flippedImage == True):
+        # Show image1 for three frames.
+        if self.frameCounter <= 2:
             screen.blit(self.image1, self.rect)
-            self.flippedImage = False
-        else:
+            self.frameCounter += 1
+
+        # Show image2 for three frames and reset the animation.
+        elif self.frameCounter <= 4:
             screen.blit(self.image2, self.rect)
-            self.flippedImage = True
+            self.frameCounter += 1
+        elif self.frameCounter > 4:
+            screen.blit(self.image2, self.rect)
+            self.frameCounter = 0
 
         # If the object is off the screen, remove it.
         if self.rect.x > 800:
@@ -136,7 +143,7 @@ class Cloud():
         screen.blit(self.image, self.rect)
 
         # If the object is off the screen, remove it.
-        if self.rect.x < -100:
+        if self.rect.x < -150:
             cloudList.remove(self)
             objectList.remove(self)
 
@@ -147,9 +154,10 @@ class Witch():
         self.image = pygame.image.load('images/witch.png')
         self.rect = self.image.get_rect()
 
-        # Movement variables.
+        # Control variables.
         self.flyingUp = False
         self.flyingDown = False
+        self.fireballReady = False
         self.upSpeed = [0, -10]
         self.downSpeed = [0, 10]
 
@@ -191,6 +199,7 @@ class Witch():
         else:
             screen.blit(self.image, self.rect)
 
+
 '''
 Game object lists.
 These lists will keep track of all of our game objects.
@@ -202,6 +211,7 @@ cloudList       = list()
 pumpkinList     = list()
 potionList      = list()
 appleList       = list()
+
 
 '''
 Custom events.
@@ -217,19 +227,20 @@ pygame.time.set_timer(SPAWNPOTION,  3500)
 pygame.time.set_timer(SPAWNCLOUD,   1500)
 pygame.time.set_timer(SPAWNPUMPKIN, 2000)
 
+
 '''
 Player game object.
 Here we create the player's character.
 We position it toward the middle of the game screen.
-Lastly, we add the player to the list of game objects.
+Then, we add the player to the list of game objects.
 '''
 witch = Witch()
 witch.rect = witch.rect.move(15, 240)
 objectList.insert(True, witch)
 
 # Make the player hitbox more forgiving.
-witch.rect.width -= 15
-witch.rect.height -= 15
+witch.rect.width -= 10
+witch.rect.height -= 10
 
 # ------------------------------------------------------------------------------------------------
 
@@ -249,101 +260,146 @@ while True: # Main game loop.
 
         # ------------- EVENT LOGIC --------------
 
-        if event.type == KEYDOWN: # Player controls
+        # We do not want to handle the usual events if the player has 0 hitpoints.
+        if witch.hitpoints <= 0:
 
-            # Moving up and down.
-            if event.key == K_UP:
-                witch.flyingUp = True
-            elif event.key == K_DOWN:
-                witch.flyingDown = True
+            # Check mouse position to determine whether the retry button is being clicked on.
+            mousePos = pos = pygame.mouse.get_pos()
+            if pygame.mouse.get_pressed()[0] == True and retrybuttonRect.collidepoint(mousePos)\
+            or event.type == KEYDOWN and event.key == K_r:
 
-            # Shooting a fireball.
-            elif event.key == K_SPACE:
+                # Empty all lists.
+                objectList      = list()
+                fireballList    = list()
+                cloudList       = list()
+                pumpkinList     = list()
+                potionList      = list()
+                appleList       = list()
+
+                # Recreate the witch.
+                witch = Witch()
+                witch.rect = witch.rect.move(15, 240)
+                objectList.insert(True, witch)
+
+                # Make the player hitbox more forgiving.
+                witch.rect.width -= 10
+                witch.rect.height -= 10
+
+                isGameOver = False
+                sBgm.play()
+
+
+        else: # Usual event handling.
+
+            if event.type == KEYDOWN: # Player controls
+
+                # Moving up and down.
+                if event.key == K_UP:
+                    witch.flyingUp = True
+                elif event.key == K_DOWN:
+                    witch.flyingDown = True
+
+                # Shooting a fireball.
+                elif event.key == K_SPACE and witch.fireballReady == True:
+
+                    # Create and position an object.
+                    fireball = Fireball()
+                    fireball.rect.x = witch.rect.x + 65
+                    fireball.rect.y = witch.rect.y + 15
+
+                    # Add the created object to relevant lists.
+                    objectList.insert(True, fireball)
+                    fireballList.insert(True, fireball)
+
+                    witch.fireballReady = False
+                    sShootFireball.play()
+
+            elif event.type == KEYUP: # Player controls.
+
+                if event.key == K_UP:
+                    witch.flyingUp = False
+                if event.key == K_DOWN:
+                    witch.flyingDown = False
+
+
+            # Object spawning logic.
+
+            elif event.type == SPAWNAPPLE:
 
                 # Create and position an object.
-                fireball = Fireball()
-                fireball.rect.x = witch.rect.x + 65
-                fireball.rect.y = witch.rect.y + 15
+                apple = Apple()
+                randomInt = random.randint(25, 495)
+                apple.rect.x += 800
+                apple.rect.y += randomInt
 
-                # Add the created object to relevant lists.
-                objectList.insert(True, fireball)
-                fireballList.insert(True, fireball)
+                # add the created object to relevant lists.
+                appleList.insert(True, apple)
+                objectList.insert(True, apple)
 
-                sShootFireball.play()
+            elif event.type == SPAWNPOTION:
 
-        elif event.type == KEYUP: # Player controls.
+                # Create and position an object.
+                potion = Potion()
+                randomInt = random.randint(25, 495)
+                potion.rect.x += 800
+                potion.rect.y += randomInt
 
-            if event.key == K_UP:
-                witch.flyingUp = False
-            if event.key == K_DOWN:
-                witch.flyingDown = False
+                # add the created object to relevant lists.
+                potionList.insert(True, potion)
+                objectList.insert(True, potion)
 
+            elif event.type == SPAWNCLOUD:
 
-        # Object spawning logic.
+                # Create and position an object.
+                cloud = Cloud()
+                randomInt = random.randint(25, 495)
+                cloud.rect.x += 800
+                cloud.rect.y += randomInt
 
-        elif event.type == SPAWNAPPLE:
+                # Make the object hitbox more forgiving.
+                cloud.rect.width -= 10
+                cloud.rect.height -= 10
 
-            # Create and position an object.
-            apple = Apple()
-            randomInt = random.randint(25, 495)
-            apple.rect.x += 800
-            apple.rect.y += randomInt
+                # add the created object to relevant lists.
+                cloudList.insert(True, cloud)
+                objectList.insert(True, cloud)
 
-            # add the created object to relevant lists.
-            appleList.insert(True, apple)
-            objectList.insert(True, apple)
+            elif event.type == SPAWNPUMPKIN:
 
-        elif event.type == SPAWNPOTION:
+                # Create and position an object.
+                pumpkin = Pumpkin()
+                randomInt = random.randint(25, 495)
+                pumpkin.rect.x += 800
+                pumpkin.rect.y += randomInt
 
-            # Create and position an object.
-            potion = Potion()
-            randomInt = random.randint(25, 495)
-            potion.rect.x += 800
-            potion.rect.y += randomInt
+                # Make the object hitbox more forgiving.
+                pumpkin.rect.width -= 5
+                pumpkin.rect.height -= 5
 
-            # add the created object to relevant lists.
-            potionList.insert(True, potion)
-            objectList.insert(True, potion)
-
-        elif event.type == SPAWNCLOUD:
-
-            # Create and position an object.
-            cloud = Cloud()
-            randomInt = random.randint(25, 495)
-            cloud.rect.x += 800
-            cloud.rect.y += randomInt
-
-            # add the created object to relevant lists.
-            cloudList.insert(True, cloud)
-            objectList.insert(True, cloud)
-
-        elif event.type == SPAWNPUMPKIN:
-
-            # Create and position an object.
-            pumpkin = Pumpkin()
-            randomInt = random.randint(25, 495)
-            pumpkin.rect.x += 800
-            pumpkin.rect.y += randomInt
-
-            # add the created object to relevant lists.
-            pumpkinList.insert(True, pumpkin)
-            objectList.insert(True, pumpkin)
+                # add the created object to relevant lists.
+                pumpkinList.insert(True, pumpkin)
+                objectList.insert(True, pumpkin)
 
         # -------------- LOOP END ----------------
 
     # Collision handling.
 
     for apple in appleList:
+
         if apple.rect.colliderect(witch):
             appleList.remove(apple)
             objectList.remove(apple)
             sAppleCollect.play()
 
+
     for potion in potionList:
+
         if potion.rect.colliderect(witch):
             potionList.remove(potion)
             objectList.remove(potion)
+            witch.fireballReady = True
             sPotionCollect.play()
+
 
     for pumpkin in pumpkinList:
 
@@ -362,6 +418,7 @@ while True: # Main game loop.
                 pumpkinList.remove(pumpkin)
                 objectList.remove(pumpkin)
 
+
     for cloud in cloudList:
 
         # Witch colliding with a cloud.
@@ -379,17 +436,33 @@ while True: # Main game loop.
                 cloudList.remove(cloud)
                 objectList.remove(cloud)
 
+    # If the game is over, show the 'game over' screen.
+    if witch.hitpoints <= 0:
 
-    '''
-    Drawing a frame.
-    After handling all event logic, we erase the last frame.
-    Next, we update all game objects.
-    Finally, we make the new frame visible.
-    '''
-    screen.fill(background)
-    screen.blit(moon, moonRect)
+        # Upon first getting to this screen, handle the audio sequence.
+        if (isGameOver == False):
+            sBgm.stop()
+            sGameOver.play()
 
-    for object in objectList:
-        object.Update()
+        screen.fill(background)
+        screen.blit(gameover, gameoverRect)
+        screen.blit(retrybutton, retrybuttonRect)
+        pygame.display.flip()
+        isGameOver = True
 
-    pygame.display.flip()
+
+    else:
+
+        '''
+        Drawing a frame.
+        After handling all event logic, we erase the last frame.
+        Next, we update all game objects.
+        Finally, we make the new frame visible.
+        '''
+        screen.fill(background)
+        screen.blit(moon, moonRect)
+
+        for object in objectList:
+            object.Update()
+
+        pygame.display.flip()
