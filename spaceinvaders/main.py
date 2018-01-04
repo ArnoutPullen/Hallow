@@ -1,13 +1,23 @@
+#https://www.youtube.com/watch?v=Ve-BvoCVN40
+
 import pygame, sys
 from pygame.locals import *
-pygame.init()
 
+screenWidth = 800
+screenHeight = 600
 FPS = 60
-fpsClock = pygame.time.Clock()
 
-#display specs
-display_width = 800
-display_height = 600
+pygame.init()
+pygame.mixer.init()
+screen = pygame.display.set_mode((screenWidth,screenHeight))
+pygame.display.set_caption("Space Invaders")
+clock = pygame.time.Clock()
+
+shipWidth = 78
+shipX = (screenWidth * 0.45)
+shipY = (screenHeight * 0.8)
+shipMoveX = 0
+shipX += shipMoveX
 
 #colors
 black=(0,0,0)
@@ -17,83 +27,98 @@ red=(255,0,0)
 white=(255,255,255)
 yellow=(255,255,0)
 
-#center of image
-shipx = (display_width * 0.45)
-shipy = (display_height * 0.8)
+backgroundImage =  pygame.image.load("background.png")
+spaceShipImage =  pygame.image.load("spaceship7.png")
+wallImage =  pygame.image.load("wall.png")
+enemyImage =  pygame.image.load("enemy.png")
+bulletImage =  pygame.image.load("bullet.png")
+
+numberEnemies = 5
+enemies = []
 
 
-#movement ship is 0
-shipxchange = 0
+def app_quit():
+    pygame.quit()
+    sys.exit("System exit.")
 
-#width of spaceship
-spaceshipwidth = 78
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("spaceship7.png").convert()
+        self.image.set_colorkey(white)#make white transparant
+        self.rect = self.image.get_rect()
+        self.rect.center = 300, 500
 
-#location of the wall
-wallx = 0
-wally = 0
+    def update(self):
+        self.shipX = 0
+        if event.type == KEYDOWN and event.key == K_LEFT:
+            self.shipX = -2
+        elif event.type == KEYDOWN and event.key == K_RIGHT:
+            self.shipX = 2
+        self.rect.x += self.shipX
 
-enemyx = 0
-enemyy = 0
+class Wall(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("wall.png").convert()
+        self.rect = self.image.get_rect()
+        self.rect.center = 100, 300
 
-bulletx = (shipx)
-bullety = (shipy)
-bulletychange = 0
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("enemy.png").convert()
+        self.image.set_colorkey(white)
+        self.rect = self.image.get_rect()
+        self.rect.center = 150, 100
 
-DISPLAYSURF = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption('Space Invaders')
-spaceShipImage = pygame.image.load('spaceship7.png')
-spaceshipRect = pygame.Rect(8,6, 71, 79)
-wallImage1 = pygame.image.load('wall.png')
-wallRect = pygame.Rect(0,0,58,17)
-enemyImage = pygame.image.load('enemy.png')
-enemyRect = pygame.Rect(0,0,30,30)
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("bullet.png").convert()
+        self.image.set_colorkey(white)
+        self.rect = self.image.get_rect()
+        self.rect.center = 400,500
 
-bulletShootImage = pygame.image.load('bullet.png')
-bulletShootRect = pygame.Rect(0,0,15,15)
+    def update(self):
+        self.bulletX = 0
+        if event.type == KEYDOWN and event.key == K_LEFT:
+            self.bulletX = -2
+        elif event.type == KEYDOWN and event.key == K_RIGHT:
+            self.bulletX = 2
+        self.rect.x += self.bulletX
+        self.bulletY = 0
+        if event.type == KEYDOWN and event.key == K_SPACE:
+            self.bulletY = -2
+        elif event.type == KEYUP and event.key == K_SPACE:
+            self.bulletY = -2
+        self.rect.y += self.bulletY
 
-pygame.Surface.set_clip
 
-while True: # main game loop
-    DISPLAYSURF.fill(white)
-    DISPLAYSURF.blit(spaceShipImage, (shipx, shipy))
-    DISPLAYSURF.blit(wallImage1, (100, 400))
-    DISPLAYSURF.blit(wallImage1, (300, 400))
-    DISPLAYSURF.blit(wallImage1, (500, 400))
-    DISPLAYSURF.blit(wallImage1, (700, 400))
-    DISPLAYSURF.blit(enemyImage, (100, 100))
+allSprites = pygame.sprite.Group()
 
+player = Player()
+wall = Wall()
+enemy = Enemy()
+bullet = Bullet()
+allSprites.add(player,wall,enemy,bullet)
 
+running = True
+while True:
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
-            pygame.quit()
-            sys.exit()
-        if event.type == KEYDOWN and event.key == K_LEFT:
-            shipxchange += -5
-        elif event.type == KEYDOWN and event.key == K_RIGHT:
-            shipxchange += 5
-        if event.type == KEYUP and event.key == K_LEFT:
-            shipxchange += 5
-        elif event.type == KEYUP and event.key == K_RIGHT:
-            shipxchange += -5
+            running = False
+            app_quit()
 
-    shipx += shipxchange
-    shipxMoment = shipx + shipxchange
+    if shipX >= screenWidth - shipWidth:
+        shipX -= 0
+    if shipX < 0:
+        shipX -= 0
 
-    #bounderies for the spaceship
-    if shipx >= display_width - spaceshipwidth:
-        shipx -= shipxchange
-    if shipx < 0:
-        shipx -= shipxchange
+    allSprites.update()
 
-    #shooting bullets
-    if event.type == KEYDOWN and event.key == K_SPACE:
-        bulletychange += -1
-        DISPLAYSURF.blit(bulletShootImage,(shipxMoment, bullety))
-    elif event.type == KEYUP and event.key == K_SPACE:
-        bulletychange += -1
-        DISPLAYSURF.blit(bulletShootImage,(shipxMoment, bullety))
+    screen.fill(black)
+    allSprites.draw(screen)
+    pygame.display.flip()
 
-    bullety += bulletychange
-
-    pygame.display.update()
-    fpsClock.tick(FPS)
+pygame.quit()
