@@ -52,6 +52,21 @@ Each class has an update() method that contains the class' movement logic.
 We call the update function for each game object in the object list.
 This allows us to cleanly update all game objects each frame.
 '''
+class UpgradeImage:
+    def __init__(self):
+        self.image = pygame.image.load('images/fireball_up.png')
+        self.rect = self.image.get_rect()
+        self.frameCounter = 0
+
+    def Update(self):
+        if self.frameCounter != 20:
+            self.rect.x = witch.rect.x
+            self.rect.y = witch.rect.y - 22
+            screen.blit(self.image, self.rect)
+            self.frameCounter += 1
+        else:
+            objectList.remove(self)
+
 class Fireball:
     def __init__(self):
         self.image1 = pygame.image.load('images/fireball1.png')
@@ -82,7 +97,6 @@ class Fireball:
         if self.rect.x > 800:
             fireballList.remove(self)
             objectList.remove(self)
-
 
 class BossFireball:
     def __init__(self):
@@ -115,7 +129,6 @@ class BossFireball:
                 bossAttackList.remove(self)
                 objectList.remove(self)
 
-
 class Apple:
     def __init__(self):
         self.image = pygame.image.load('images/apple.png')
@@ -133,7 +146,6 @@ class Apple:
         if self.rect.x < -100:
             appleList.remove(self)
             objectList.remove(self)
-
 
 class Potion:
     def __init__(self):
@@ -153,7 +165,6 @@ class Potion:
             potionList.remove(self)
             objectList.remove(self)
 
-
 class Pumpkin():
     def __init__(self):
         self.image = pygame.image.load('images/pumpkin.png')
@@ -172,7 +183,6 @@ class Pumpkin():
             pumpkinList.remove(self)
             objectList.remove(self)
 
-
 class Cloud:
     def __init__(self):
         self.image = pygame.image.load('images/cloud.png')
@@ -190,7 +200,6 @@ class Cloud:
         if self.rect.x < -150:
             cloudList.remove(self)
             objectList.remove(self)
-
 
 class EyePumpkin:  # Boss
     def __init__(self):
@@ -245,7 +254,6 @@ class EyePumpkin:  # Boss
             else:
                 self.goingDown = False
                 self.goingUp = True
-
 
 class Witch:
     def __init__(self):
@@ -565,9 +573,35 @@ while True: # Main game loop.
 
             if witch.fireballReady == False:
                 witch.fireballReady = True
+
+                # Show upgrade image.
+                upgradeImage = UpgradeImage()
+                upgradeImage.image = pygame.image.load('images/fireball_up.png')
+                upgradeImage.rect = upgradeImage.image.get_rect()
+                objectList.insert(True, upgradeImage)
+
+            elif witch.hitpoints != 4:
+                witch.hitpoints += 1
+
+                # Show upgrade image.
+                upgradeImage = UpgradeImage()
+                upgradeImage.image = pygame.image.load('images/hp_up.png')
+                upgradeImage.rect = upgradeImage.image.get_rect()
+                objectList.insert(True, upgradeImage)
+
             elif witch.upSpeed != -9:
                 witch.upSpeed -= 1
                 witch.downSpeed += 1
+
+                # Show upgrade image.
+                upgradeImage = UpgradeImage()
+                upgradeImage.image = pygame.image.load('images/speed_up.png')
+                upgradeImage.rect = upgradeImage.image.get_rect()
+                objectList.insert(True, upgradeImage)
+
+            else:
+                # TODO: Score increase.
+                pass
 
             sPotionCollect.play()
 
