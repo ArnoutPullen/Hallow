@@ -12,7 +12,8 @@ screen = pygame.display.set_mode((screenWidth,screenHeight))
 pygame.display.set_caption("Space Invaders")
 clock = pygame.time.Clock()
 
-shipWidth = 78
+
+shipWidth = 67
 
 #colors
 black=(0,0,0)
@@ -29,12 +30,11 @@ def app_quit():
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("spaceship7.png").convert()
-        self.image.set_colorkey(white)#make white transparant
+        self.image = pygame.image.load("spaceship3.png").convert()
+        self.image.set_colorkey(white)
         self.rect = self.image.get_rect()
         self.rect.centerx = screenWidth / 2
         self.rect.bottom = screenHeight - 10
-        self.speedx = 0
 
     def update(self):
         self.speedx = 0
@@ -56,21 +56,21 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("enemy.png").convert()
+        self.image = pygame.image.load("enemy6.png").convert()
         self.image.set_colorkey(white)
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = random.randrange(0, 200)
-        self.speedx = random.randrange(1,2)
+        self.speedx = random.randrange(1, 2)
 
     def update(self):
         self.rect.x += self.speedx
         if self.rect.right > screenWidth:
-            self.rect.x = 50
+            self.rect.x = 0
             self.rect.y = random.randrange(0, 250)
-            self.speedx = random.randrange(1,3)
-        if self.rect.x > screenWidth:
-            self.kill()
+            self.speedx = random.randrange(1, 3)
+        # if self.rect.x > screenWidth: #kill when of the screen
+        #     self.kill()
 
     def shootEnemy(self):
          bulletEnemy = BulletEnemy(self.rect.centerx, self.rect.bottom)
@@ -110,9 +110,9 @@ class BulletEnemy(pygame.sprite.Sprite):
 class Wall(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("wall.png").convert()
+        self.image = pygame.image.load("wall2.png").convert()
         self.rect = self.image.get_rect()
-        self.rect.center = 100, 300
+        self.rect.center = 100, 350
 
 allSprites = pygame.sprite.Group()
 player = Player()
@@ -122,6 +122,7 @@ bulletsEnemy = pygame.sprite.Group()
 wall = Wall()
 allSprites.add(player, enemy, bulletsPlayer, bulletsEnemy, wall)
 
+
 for i in range(1):
     e = Enemy()
     allSprites.add(e)
@@ -129,6 +130,7 @@ for i in range(1):
 
 running = True
 while True:
+
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             running = False
@@ -140,6 +142,23 @@ while True:
                 random.choice(enemy.sprites()).shootEnemy()
 
     allSprites.update()
+
+    hitplayer = pygame.sprite.spritecollide(player, bulletsEnemy, True)
+    if hitplayer:
+        running = app_quit()
+
+    hitenemy = pygame.sprite.groupcollide(enemy, bulletsPlayer, True, True)
+    if hitenemy:
+        running = app_quit()
+
+    # hitwallenemy = pygame.sprite.spritecollide(wall, bulletsEnemy, True)
+    # if hitwallenemy:
+    #     running = app_quit()
+    #
+    # hitwallplayer = pygame.sprite.spritecollide(wall, bulletsPlayer, True)
+    # if hitwallplayer:
+    #     running = app_quit()
+
     screen.fill(black)
     allSprites.draw(screen)
     pygame.display.flip()
