@@ -1,40 +1,60 @@
 import pygame
+# from .classes import *
+from classes.game import Game
+from classes.settings import Settings
 
-player1 = ''
-player2 = ''
+# Init game
+game = Game()
+game.init()
 
-XO = "X"
+running = True
+while running:
 
-grid = [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0]
-]
+    # Init
+    game.clock.tick(10)
+    game.screen.fill(Settings.backgroundColor)
 
-run = 1
+    # Movement while game is not paused
+    if Settings.pause is not True:
+        # Player movement
+        key = pygame.key.get_pressed()
+        # Left
+        if key[pygame.K_LEFT]:
+            game.player.move(-Settings.blockSize, 0)
+        # Right
+        if key[pygame.K_RIGHT]:
+            game.player.move(Settings.blockSize, 0)
+        # Up
+        if key[pygame.K_UP]:
+            game.player.move(0, -Settings.blockSize)
+        # Down
+        if key[pygame.K_DOWN]:
+            game.player.move(0, Settings.blockSize)
 
-def init():
-    global player1, player2
-    player1 = input('Enter player 1 name: ')
-    check = input('Do you want to play with another player or computer? Enter player or computer: ')
-    if(check == 'player'):
-        player2 = input('Enter player 2 name: ')
-    elif(check == 'computer'):
-        player2 = 'pc'
-    else:
-        print('input incorrect')
-        init()
-init()
+        # Ghost movement
+        for ghost in game.ghosts:
+            x = Settings.blockSize * random.randint(-1, 1)
+            y = Settings.blockSize * random.randint(-1, 1)
+            ghost.move(x, y)
 
-print(player1)
-print(player2)
+    # Pause
+    if Settings.pause is True:
+        game.text('Game Paused')
 
-pygame.init()
-DISPLAYSURF = pygame.display.set_mode((400, 300))
-pygame.display.set_caption('Tic Tac Toe XO')
+    # Render objects
+    for wall in game.walls:
+        game.draw_rect(wall.rect, Settings.wallColor)
+    for ghost in game.ghosts:
+        game.draw_rect(ghost.rect, ghost.color)
+    game.draw_rect(game.player.rect, Settings.playerColor)
+    game.counter_points()
+    pygame.display.flip()
 
-while (run == 1):
+    # Quit
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            run = 0
+            running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            running = False
+        if event.type == pygame.MOUSEBUTTONUP and Settings.pause is True:
+            game.restart()
