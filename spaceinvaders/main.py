@@ -100,7 +100,7 @@ class BulletEnemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.bottom = y
         self.rect.centerx = x
-        self.speedy = 3
+        self.speedy = 2
 
     def update(self):
         self.rect.y += self.speedy
@@ -137,7 +137,7 @@ while True:
             if event.key == pygame.K_SPACE:
                 player.shootPlayer()
             if event.key == pygame.K_TAB:
-                enemy.shootEnemy()
+                random.choice(enemy.sprites()).shootEnemy()
 
     allSprites.update()
     screen.fill(black)
