@@ -52,7 +52,8 @@ class Wall:
 
 class EnemyBullet:
     def __init__(self):
-        self.image = pygame.image.load('bulletenemy.png')
+        self.image = pygame.image.load('bulletenemy.png').convert()
+        self.image.set_colorkey(white)
         self.rect = self.image.get_rect()
         self.speed = [0, 10] #bullet is going down with 30px
 
@@ -60,15 +61,16 @@ class EnemyBullet:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-class EnemyRightBullet:
-    def __init__(self):
-        self.image = pygame.image.load('bulletenemy.png')
-        self.rect = self.image.get_rect()
-        self.speed = [0, 20]
-
-    def Update(self):
-        self.rect = self.rect.move(self.speed)
-        screen.blit(self.image, self.rect)
+# class EnemyRightBullet:
+#     def __init__(self):
+#         self.image = pygame.image.load('bulletenemy.png').convert()
+#         self.image.set_colorkey(white)
+#         self.rect = self.image.get_rect()
+#         self.speed = [0, 20]
+# 
+#     def Update(self):
+#         self.rect = self.rect.move(self.speed)
+#         screen.blit(self.image, self.rect)
 
 class Enemy:
     def __init__(self):
@@ -80,17 +82,17 @@ class Enemy:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-class EnemyRight:
-    def __init__(self):
-        self.image = pygame.image.load('enemy6.png')
-        self.rect = self.rect.move([700,400])
-        self.rect = self.image.get_rect()
-        self.speed = [-4, 0]
-        objectList.insert(True, EnemyRight)
-
-    def Update(self):
-        self.rect = self.rect.move(self.speed)
-        screen.blit(self.image, self.rect)
+# class EnemyRight:
+#     def __init__(self):
+#         self.image = pygame.image.load('enemy6.png')
+#         self.rect = self.rect.move([700,400])
+#         self.rect = self.image.get_rect()
+#         self.speed = [-4, 0]
+#         objectList.insert(True, EnemyRight)
+# 
+#     def Update(self):
+#         self.rect = self.rect.move(self.speed)
+#         screen.blit(self.image, self.rect)
 
 
 spawnenemy = USEREVENT + 1 #spawn enemy
@@ -174,7 +176,7 @@ while True:
         #     enemy2.rect = enemy.rect.move([100,100])
         #     enemyRightList.insert(True, enemy2)
         #     objectList.insert(True, enemy2)
-        # 
+        #
         # elif event.type == enemyshoot:
         #     enemyBullet2 = EnemyRightBullet()
         #     enemyBullet2.rect = enemyBullet2.rect.move(enemy.rect.x + 25, enemy.rect.y)
