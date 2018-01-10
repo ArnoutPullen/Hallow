@@ -9,6 +9,7 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Space Invaders')
 background = 40, 40, 40  # Background RGB color.
 white = (255,255,255)
+pointsSpaceInvaders = 0
 
 class Player:
     def __init__(self):
@@ -67,7 +68,7 @@ class EnemyBullet:
 #         self.image.set_colorkey(white)
 #         self.rect = self.image.get_rect()
 #         self.speed = [0, 20]
-# 
+#
 #     def Update(self):
 #         self.rect = self.rect.move(self.speed)
 #         screen.blit(self.image, self.rect)
@@ -89,7 +90,7 @@ class Enemy:
 #         self.rect = self.image.get_rect()
 #         self.speed = [-4, 0]
 #         objectList.insert(True, EnemyRight)
-# 
+#
 #     def Update(self):
 #         self.rect = self.rect.move(self.speed)
 #         screen.blit(self.image, self.rect)
@@ -138,7 +139,9 @@ objectList.insert(True, wall_4)
 while True:
     pygame.time.Clock().tick(60) #60 fps
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
+        if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
+            print(pointsSpaceInvaders)
+            sys.exit()
 
         if event.type == KEYDOWN:
             if event.key == K_LEFT: #if goingLeft = True then spaceship will go left
@@ -190,9 +193,11 @@ while True:
             if bullet.rect.colliderect(enemy): #if player bullet hits enemy, remove bullet and enemy
                 enemyList.remove(enemy)
                 objectList.remove(enemy)
+                pointsSpaceInvaders += 1000
 
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
+
 
     for bullet in playerBulletList:
         for wall_1 in wallList:
@@ -202,11 +207,8 @@ while True:
                 objectList.remove(bullet)
 
     # for enemyBullet in enemyBulletList:
-    #     for player in playerList:
-    #
-    #         if bullet.rect.colliderect(player):
-    #             playerList.remove(player)
-    #             objectList.remove(player)
+    #     if bullet.rect.colliderect(player):
+    #         pygame.QUIT
 
     screen.fill(background)
 
