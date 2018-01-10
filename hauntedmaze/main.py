@@ -6,7 +6,6 @@ from classes.settings import Settings
 # Init game
 game = Game()
 game.init()
-game.load()
 
 running = True
 while running:
@@ -31,11 +30,14 @@ while running:
         # Down
         if key[pygame.K_DOWN]:
             game.player.move(0, Settings.blockSize)
+
+        # Ghost movement
         for ghost in game.ghosts:
             x = Settings.blockSize * random.randint(-1, 1)
             y = Settings.blockSize * random.randint(-1, 1)
             ghost.move(x, y)
 
+    # Pause
     if Settings.pause is True:
         game.text('Game Paused')
 
@@ -45,13 +47,14 @@ while running:
     for ghost in game.ghosts:
         game.draw_rect(ghost.rect, ghost.color)
     game.draw_rect(game.player.rect, Settings.playerColor)
+    game.counter_points()
     pygame.display.flip()
 
     # Quit
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
-        if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             running = False
-        if e.type == pygame.MOUSEBUTTONUP and Settings.pause is True:
+        if event.type == pygame.MOUSEBUTTONUP and Settings.pause is True:
             game.restart()
