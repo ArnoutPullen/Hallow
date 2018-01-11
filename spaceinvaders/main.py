@@ -7,7 +7,7 @@ pygame.init()
 size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Space Invaders')
-background = 40, 40, 40  # Background RGB color.
+background = 40, 40, 40  # Background color.
 white = (255,255,255)
 black = (0,0,0)
 pointsSpaceInvaders = 0
@@ -65,12 +65,23 @@ class EnemyBullet:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-class EnemyRightBullet:
+class Enemy2Bullet:
     def __init__(self):
         self.image = pygame.image.load('bulletenemy.png').convert()
         self.image.set_colorkey(black)
         self.rect = self.image.get_rect()
         self.speed = [0, 20]
+
+    def Update(self):
+        self.rect = self.rect.move(self.speed)
+        screen.blit(self.image, self.rect)
+
+class Enemy3Bullet:
+    def __init__(self):
+        self.image = pygame.image.load('bulletenemy.png').convert()
+        self.image.set_colorkey(black)
+        self.rect = self.image.get_rect()
+        self.speed = [0, 10] #bullet is going down with 10px
 
     def Update(self):
         self.rect = self.rect.move(self.speed)
@@ -86,11 +97,21 @@ class Enemy:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-class EnemyRight:
+class Enemy2:
     def __init__(self):
-        self.image = pygame.image.load('enemy6.png')
+        self.image = pygame.image.load('enemy1.png')
         self.rect = self.image.get_rect()
         self.speed = [-4, 0]
+
+    def Update(self):
+        self.rect = self.rect.move(self.speed)
+        screen.blit(self.image, self.rect)
+
+class Enemy3:
+    def __init__(self):
+        self.image = pygame.image.load('enemy2.png')
+        self.rect = self.image.get_rect()
+        self.speed = [6, 0]
 
     def Update(self):
         self.rect = self.rect.move(self.speed)
@@ -105,19 +126,25 @@ spawnenemy = USEREVENT + 1 #spawn enemy
 enemyshoot = USEREVENT + 2 #spawn enemy bullet
 spawnenemy2 = USEREVENT + 3 #spawn enemy right
 enemyshoot2 = USEREVENT + 4 #spawn enemy right bullet
+spawnenemy3 = USEREVENT + 5 #spawn enemy right
+enemyshoot3 = USEREVENT + 6 #spawn enemy right bullet
 pygame.time.set_timer(spawnenemy, 2000) #spawn enemy after 2 sec
 pygame.time.set_timer(enemyshoot, 3126) #spawn enemy bullet after 3,1 sec
 pygame.time.set_timer(spawnenemy2, 2500) #spawn enemy right after 2,5 sec
 pygame.time.set_timer(enemyshoot2, 3600) #spawn enemy bullet right after 3,6 sec
+pygame.time.set_timer(spawnenemy3, 4000) #spawn enemy right after 2,5 sec
+pygame.time.set_timer(enemyshoot3, 4600) #spawn enemy bullet right after 3,6 sec
 
 #lists
 objectList = list()
 playerBulletList = list()
 enemyBulletList = list()
-enemyRightBulletList = list()
+enemy2BulletList = list()
+enemy3BulletList = list()
 wallList = list()
 enemyList = list()
-enemyRightList = list()
+enemy2List = list()
+enemy3List = list()
 playerList = list()
 
 player = Player()
@@ -185,16 +212,28 @@ while True:
             objectList.insert(True, enemyBullet) #enemybullet will be added in objectList
 
         elif event.type == spawnenemy2:
-            enemy2 = EnemyRight()
+            enemy2 = Enemy2()
             enemy2.rect = enemy2.rect.move([900,150])
-            enemyRightList.insert(True, enemy2)
+            enemy2List.insert(True, enemy2)
             objectList.insert(True, enemy2)
 
         elif event.type == enemyshoot2:
-            enemyBullet2 = EnemyRightBullet()
+            enemyBullet2 = Enemy2Bullet()
             enemyBullet2.rect = enemyBullet2.rect.move(enemy2.rect.x + 25, enemy2.rect.y)
-            enemyRightBulletList.insert(True, enemyBullet2)
+            enemy2BulletList.insert(True, enemyBullet2)
             objectList.insert(True, enemyBullet2)
+
+        elif event.type == spawnenemy3:
+            enemy3 = Enemy3() #class will be called
+            enemy3.rect = enemy3.rect.move([-25,250]) #starting position of the enemy
+            enemy3List.insert(True, enemy3) #enemy will be added in enemyList
+            objectList.insert(True, enemy3) #enemy will be added in objectList
+
+        elif event.type == enemyshoot3:
+            enemyBullet3 = Enemy3Bullet()
+            enemyBullet3.rect = enemyBullet3.rect.move(enemy3.rect.x + 25, enemy3.rect.y)
+            enemy3BulletList.insert(True, enemyBullet3)
+            objectList.insert(True, enemyBullet3)
 
     for bullet in playerBulletList:
         for enemy in enemyList:
@@ -205,17 +244,15 @@ while True:
                 pointsSpaceInvaders += 1000
                 explosionsound.play()
 
-
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
 
 
     for bullet in playerBulletList:
-        for enemy2 in enemyRightList:
+        for enemy2 in enemy2List:
 
             if bullet.rect.colliderect(enemy2): #if player bullet hits enemy, remove bullet and enemy
-
-                enemyRightList.remove(enemy2)
+                enemy2List.remove(enemy2)
                 objectList.remove(enemy2)
                 pointsSpaceInvaders += 1000
                 explosionsound.play()
@@ -223,6 +260,17 @@ while True:
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
 
+    for bullet in playerBulletList:
+        for enemy3 in enemy3List:
+
+            if bullet.rect.colliderect(enemy3): #if player bullet hits enemy, remove bullet and enemy
+                enemy3List.remove(enemy3)
+                objectList.remove(enemy3)
+                pointsSpaceInvaders += 1000
+                explosionsound.play()
+
+                playerBulletList.remove(bullet)
+                objectList.remove(bullet)
 
     for bullet in playerBulletList:
         for wall_1 in wallList:
@@ -231,9 +279,30 @@ while True:
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
 
+    for enemyBullet in enemyBulletList:
+        for wall_1 in wallList:
+
+            if enemyBullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+                enemyBulletList.remove(enemyBullet)
+                objectList.remove(enemyBullet)
+
+    for enemy2Bullet in enemy2BulletList:
+            for wall_1 in wallList:
+
+                if enemy2Bullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+                    enemy2BulletList.remove(enemy2Bullet)
+                    objectList.remove(enemy2Bullet)
+
+    for enemy3Bullet in enemy3BulletList:
+            for wall_1 in wallList:
+
+                if enemy3Bullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+                    enemy3BulletList.remove(enemy3Bullet)
+                    objectList.remove(enemy3Bullet)
+
     # for enemyBullet in enemyBulletList:
-    #      if enemyBullet.rect.colliderect(player):
-    #          pygame.QUIT
+    #       if enemyBullet.rect.colliderect(player):
+    #           pygame.QUIT
 
     screen.fill(background)
 
