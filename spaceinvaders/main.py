@@ -7,7 +7,7 @@ pygame.init()
 size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Space Invaders')
-background = 40, 40, 40  # Background color.
+background = 40, 40, 40  # background color
 white = (255,255,255)
 black = (0,0,0)
 pointsSpaceInvaders = 0
@@ -117,8 +117,8 @@ class Enemy3:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-shootsound = pygame.mixer.Sound('lasershoot.wav')
-explosionsound = pygame.mixer.Sound('explosion.wav')
+shootsound = pygame.mixer.Sound('lasershoot.wav') #plays this sound when shooting
+explosionsound = pygame.mixer.Sound('explosion.wav') #plays this sound when hitting enemy
 pygame.mixer.music.load('musicbackground.wav')
 pygame.mixer.music.set_volume(0.4)
 
@@ -129,11 +129,11 @@ enemyshoot2 = USEREVENT + 4 #spawn enemy right bullet
 spawnenemy3 = USEREVENT + 5 #spawn enemy right
 enemyshoot3 = USEREVENT + 6 #spawn enemy right bullet
 pygame.time.set_timer(spawnenemy, 2000) #spawn enemy after 2 sec
-pygame.time.set_timer(enemyshoot, 3126) #spawn enemy bullet after 3,1 sec
+pygame.time.set_timer(enemyshoot, 3100) #spawn enemy bullet after 3,1 sec
 pygame.time.set_timer(spawnenemy2, 2500) #spawn enemy right after 2,5 sec
 pygame.time.set_timer(enemyshoot2, 3600) #spawn enemy bullet right after 3,6 sec
-pygame.time.set_timer(spawnenemy3, 4000) #spawn enemy right after 2,5 sec
-pygame.time.set_timer(enemyshoot3, 4600) #spawn enemy bullet right after 3,6 sec
+pygame.time.set_timer(spawnenemy3, 4000) #spawn enemy right after 4 sec
+pygame.time.set_timer(enemyshoot3, 4600) #spawn enemy bullet right after 4,6 sec
 
 #lists
 objectList = list()
@@ -172,7 +172,7 @@ wall_4.rect = wall_4.rect.move([700,400])
 wallList.insert(True, wall_4)
 objectList.insert(True, wall_4)
 
-pygame.mixer.music.play(loops=-1) #loop it
+# pygame.mixer.music.play(loops=-1) #loop it
 while True:
     pygame.time.Clock().tick(60) #60 fps
     for event in pygame.event.get():
@@ -241,12 +241,11 @@ while True:
             if bullet.rect.colliderect(enemy): #if player bullet hits enemy, remove bullet and enemy
                 enemyList.remove(enemy)
                 objectList.remove(enemy)
-                pointsSpaceInvaders += 1000
-                explosionsound.play()
+                pointsSpaceInvaders += 1000 #add 1000 points
+                explosionsound.play() #play sound
 
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
-
 
     for bullet in playerBulletList:
         for enemy2 in enemy2List:
@@ -282,27 +281,38 @@ while True:
     for enemyBullet in enemyBulletList:
         for wall_1 in wallList:
 
-            if enemyBullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+            if enemyBullet.rect.colliderect(wall_1): #if enemy bullet hits wall, remove bullet
                 enemyBulletList.remove(enemyBullet)
                 objectList.remove(enemyBullet)
 
     for enemy2Bullet in enemy2BulletList:
             for wall_1 in wallList:
 
-                if enemy2Bullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+                if enemy2Bullet.rect.colliderect(wall_1): #if enemy bullet hits wall, remove bullet
                     enemy2BulletList.remove(enemy2Bullet)
                     objectList.remove(enemy2Bullet)
 
     for enemy3Bullet in enemy3BulletList:
             for wall_1 in wallList:
 
-                if enemy3Bullet.rect.colliderect(wall_1): #if player bullet hits wall, remove bullet
+                if enemy3Bullet.rect.colliderect(wall_1): #if enemy bullet hits wall, remove bullet
                     enemy3BulletList.remove(enemy3Bullet)
                     objectList.remove(enemy3Bullet)
 
-    # for enemyBullet in enemyBulletList:
-    #       if enemyBullet.rect.colliderect(player):
-    #           pygame.QUIT
+    for enemyBullet in enemyBulletList:
+        if enemyBullet.rect.colliderect(player):
+            print(pointsSpaceInvaders)
+            sys.exit()
+
+    for enemy2Bullet in enemy2BulletList:
+        if enemy2Bullet.rect.colliderect(player):
+            print(pointsSpaceInvaders)
+            sys.exit()
+
+    for enemy3Bullet in enemy3BulletList:
+        if enemy3Bullet.rect.colliderect(player):
+            print(pointsSpaceInvaders)
+            sys.exit()
 
     screen.fill(background)
 
