@@ -9,7 +9,9 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Space Invaders')
 background = 40, 40, 40  # Background RGB color.
 white = (255,255,255)
+black = (0,0,0)
 pointsSpaceInvaders = 0
+pygame.mixer.init()
 
 class Player:
     def __init__(self):
@@ -34,6 +36,7 @@ class PlayerBullet:
         self.image.set_colorkey(white)
         self.rect = self.image.get_rect()
         self.speed = [0, -4] #vertically going 7 px up
+        shootsound.play()
 
     def Update(self):
         self.rect = self.rect.move(self.speed) #rect update with speed(-7)
@@ -54,24 +57,24 @@ class Wall:
 class EnemyBullet:
     def __init__(self):
         self.image = pygame.image.load('bulletenemy.png').convert()
-        self.image.set_colorkey(white)
+        self.image.set_colorkey(black)
         self.rect = self.image.get_rect()
-        self.speed = [0, 10] #bullet is going down with 30px
+        self.speed = [0, 10] #bullet is going down with 10px
 
     def Update(self):
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-# class EnemyRightBullet:
-#     def __init__(self):
-#         self.image = pygame.image.load('bulletenemy.png').convert()
-#         self.image.set_colorkey(white)
-#         self.rect = self.image.get_rect()
-#         self.speed = [0, 20]
-#
-#     def Update(self):
-#         self.rect = self.rect.move(self.speed)
-#         screen.blit(self.image, self.rect)
+class EnemyRightBullet:
+    def __init__(self):
+        self.image = pygame.image.load('bulletenemy.png').convert()
+        self.image.set_colorkey(black)
+        self.rect = self.image.get_rect()
+        self.speed = [0, 20]
+
+    def Update(self):
+        self.rect = self.rect.move(self.speed)
+        screen.blit(self.image, self.rect)
 
 class Enemy:
     def __init__(self):
@@ -83,23 +86,29 @@ class Enemy:
         self.rect = self.rect.move(self.speed)
         screen.blit(self.image, self.rect)
 
-# class EnemyRight:
-#     def __init__(self):
-#         self.image = pygame.image.load('enemy6.png')
-#         self.rect = self.rect.move([700,400])
-#         self.rect = self.image.get_rect()
-#         self.speed = [-4, 0]
-#         objectList.insert(True, EnemyRight)
-#
-#     def Update(self):
-#         self.rect = self.rect.move(self.speed)
-#         screen.blit(self.image, self.rect)
+class EnemyRight:
+    def __init__(self):
+        self.image = pygame.image.load('enemy6.png')
+        self.rect = self.image.get_rect()
+        self.speed = [-4, 0]
 
+    def Update(self):
+        self.rect = self.rect.move(self.speed)
+        screen.blit(self.image, self.rect)
+
+shootsound = pygame.mixer.Sound('lasershoot.wav')
+explosionsound = pygame.mixer.Sound('explosion.wav')
+pygame.mixer.music.load('musicbackground.wav')
+pygame.mixer.music.set_volume(0.4)
 
 spawnenemy = USEREVENT + 1 #spawn enemy
 enemyshoot = USEREVENT + 2 #spawn enemy bullet
+spawnenemy2 = USEREVENT + 3 #spawn enemy right
+enemyshoot2 = USEREVENT + 4 #spawn enemy right bullet
 pygame.time.set_timer(spawnenemy, 2000) #spawn enemy after 2 sec
-pygame.time.set_timer(enemyshoot, 3126) #spawn enemy bullet after 3 sec
+pygame.time.set_timer(enemyshoot, 3126) #spawn enemy bullet after 3,1 sec
+pygame.time.set_timer(spawnenemy2, 2500) #spawn enemy right after 2,5 sec
+pygame.time.set_timer(enemyshoot2, 3600) #spawn enemy bullet right after 3,6 sec
 
 #lists
 objectList = list()
@@ -136,6 +145,7 @@ wall_4.rect = wall_4.rect.move([700,400])
 wallList.insert(True, wall_4)
 objectList.insert(True, wall_4)
 
+pygame.mixer.music.play(loops=-1) #loop it
 while True:
     pygame.time.Clock().tick(60) #60 fps
     for event in pygame.event.get():
@@ -174,18 +184,17 @@ while True:
             enemyBulletList.insert(True, enemyBullet) #enemybullet will be added in enemyBulletList
             objectList.insert(True, enemyBullet) #enemybullet will be added in objectList
 
-        # elif event.type == spawnenemy:
-        #     enemy2 = EnemyRight()
-        #     enemy2.rect = enemy.rect.move([100,100])
-        #     enemyRightList.insert(True, enemy2)
-        #     objectList.insert(True, enemy2)
-        #
-        # elif event.type == enemyshoot:
-        #     enemyBullet2 = EnemyRightBullet()
-        #     enemyBullet2.rect = enemyBullet2.rect.move(enemy.rect.x + 25, enemy.rect.y)
-        #     enemyRightBulletList.insert(True, enemyBullet2)
-        #     objectList.insert(True, enemyBullet2)
+        elif event.type == spawnenemy2:
+            enemy2 = EnemyRight()
+            enemy2.rect = enemy2.rect.move([900,150])
+            enemyRightList.insert(True, enemy2)
+            objectList.insert(True, enemy2)
 
+        elif event.type == enemyshoot2:
+            enemyBullet2 = EnemyRightBullet()
+            enemyBullet2.rect = enemyBullet2.rect.move(enemy2.rect.x + 25, enemy2.rect.y)
+            enemyRightBulletList.insert(True, enemyBullet2)
+            objectList.insert(True, enemyBullet2)
 
     for bullet in playerBulletList:
         for enemy in enemyList:
@@ -194,6 +203,22 @@ while True:
                 enemyList.remove(enemy)
                 objectList.remove(enemy)
                 pointsSpaceInvaders += 1000
+                explosionsound.play()
+
+
+                playerBulletList.remove(bullet)
+                objectList.remove(bullet)
+
+
+    for bullet in playerBulletList:
+        for enemy2 in enemyRightList:
+
+            if bullet.rect.colliderect(enemy2): #if player bullet hits enemy, remove bullet and enemy
+
+                enemyRightList.remove(enemy2)
+                objectList.remove(enemy2)
+                pointsSpaceInvaders += 1000
+                explosionsound.play()
 
                 playerBulletList.remove(bullet)
                 objectList.remove(bullet)
@@ -207,8 +232,8 @@ while True:
                 objectList.remove(bullet)
 
     # for enemyBullet in enemyBulletList:
-    #     if bullet.rect.colliderect(player):
-    #         pygame.QUIT
+    #      if enemyBullet.rect.colliderect(player):
+    #          pygame.QUIT
 
     screen.fill(background)
 
