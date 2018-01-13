@@ -172,7 +172,7 @@ wall_4.rect = wall_4.rect.move([700,400])
 wallList.insert(True, wall_4)
 objectList.insert(True, wall_4)
 
-# pygame.mixer.music.play(loops=-1) #loop it
+pygame.mixer.music.play(loops=-1) #loop it
 while True:
     pygame.time.Clock().tick(60) #60 fps
     for event in pygame.event.get():
